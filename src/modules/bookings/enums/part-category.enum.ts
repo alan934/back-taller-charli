@@ -1,0 +1,7 @@
+export enum PartCategory {
+  ALTERNATOR = 'ALTERNATOR',
+  STARTER = 'STARTER',
+  BATTERY = 'BATTERY',
+  HARNESS = 'HARNESS',
+  OTHER = 'OTHER',
+}
