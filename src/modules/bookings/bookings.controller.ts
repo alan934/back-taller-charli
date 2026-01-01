@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   Req,
   UseGuards,
   ForbiddenException,
@@ -25,6 +26,18 @@ export class BookingsController {
   async create(@Body() dto: CreateBookingDto, @Req() req: any) {
     const requesterId = req.user?.id;
     return this.bookingsService.create(dto, requesterId);
+  }
+
+  @Get('customers/search')
+  @Roles(Role.ADMIN)
+  async searchCustomers(@Query('q') q = '') {
+    return this.bookingsService.searchCustomers(q);
+  }
+
+  @Get('customers/:id/vehicles')
+  @Roles(Role.ADMIN)
+  async listCustomerVehicles(@Param('id', ParseIntPipe) id: number) {
+    return this.bookingsService.listCustomerVehicles(id);
   }
 
   @Get()

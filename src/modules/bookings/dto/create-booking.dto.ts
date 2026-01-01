@@ -89,6 +89,12 @@ export class CreateBookingDto {
   createCustomer?: CreateCustomerDto;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  vehicleId?: number;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => VehicleInputDto)
   vehicle?: VehicleInputDto;

@@ -2,7 +2,7 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { instanceToPlain } from 'class-transformer';
 import * as bcrypt from 'bcryptjs';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Role } from '../../common/enums/role.enum';
 import { User } from './entities/user.entity';
 
@@ -48,6 +48,19 @@ export class UsersService {
 
   async findById(id: number): Promise<User | null> {
     return this.usersRepo.findOne({ where: { id } });
+  }
+
+  async searchClients(query: string, limit = 10): Promise<User[]> {
+    const q = query.trim();
+    if (!q) return [];
+    return this.usersRepo.find({
+      where: [
+        { email: ILike(`%${q}%`), role: Role.CLIENT },
+        { fullName: ILike(`%${q}%`), role: Role.CLIENT },
+      ],
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   sanitizeUser(user: User): Record<string, unknown> {

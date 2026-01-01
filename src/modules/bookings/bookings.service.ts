@@ -104,42 +104,53 @@ export class BookingsService {
     let selectedCategory: PartCategory | null = null;
 
     if (dto.assetType === AssetType.VEHICLE) {
-      if (!dto.vehicle) throw new BadRequestException('Datos del vehículo requeridos');
-
       const invalid = issues.filter((i) => i.partCategory);
       if (invalid.length) {
         throw new BadRequestException('Alguna falla no corresponde a vehículos');
       }
 
-      const vehicleType = await this.vehicleTypesRepo.findOne({ where: { id: dto.vehicle.typeId } });
-      if (!vehicleType) {
-        throw new BadRequestException('Tipo de vehículo inválido');
-      }
+      if (dto.vehicleId) {
+        vehicle = await this.vehiclesRepo.findOne({
+          where: { id: dto.vehicleId },
+          relations: ['owner', 'type', 'brand'],
+        });
 
-      let vehicleBrand: VehicleBrand | null = null;
-      if (dto.vehicle.brandId) {
-        vehicleBrand = await this.vehicleBrandsRepo.findOne({ where: { id: dto.vehicle.brandId } });
-        if (!vehicleBrand) {
-          throw new BadRequestException('Marca de vehículo inválida');
+        if (!vehicle || vehicle.owner.id !== customer.id) {
+          throw new BadRequestException('Vehículo inválido para el cliente');
         }
-      }
+      } else {
+        if (!dto.vehicle) throw new BadRequestException('Datos del vehículo requeridos');
 
-      if (!vehicleBrand && !dto.vehicle.brandOther?.trim()) {
-        throw new BadRequestException('Debes seleccionar una marca o especificar "Otros"');
-      }
+        const vehicleType = await this.vehicleTypesRepo.findOne({ where: { id: dto.vehicle.typeId } });
+        if (!vehicleType) {
+          throw new BadRequestException('Tipo de vehículo inválido');
+        }
 
-      vehicle = await this.vehiclesRepo.save(
-        this.vehiclesRepo.create({
-          owner: customer,
-          type: vehicleType,
-          brand: vehicleBrand ?? undefined,
-          brandOther: dto.vehicle.brandOther?.trim() || null,
-          model: dto.vehicle.model,
-          year: dto.vehicle.year,
-          vinOrPlate: dto.vehicle.vinOrPlate,
-          notes: dto.vehicle.notes,
-        }),
-      );
+        let vehicleBrand: VehicleBrand | null = null;
+        if (dto.vehicle.brandId) {
+          vehicleBrand = await this.vehicleBrandsRepo.findOne({ where: { id: dto.vehicle.brandId } });
+          if (!vehicleBrand) {
+            throw new BadRequestException('Marca de vehículo inválida');
+          }
+        }
+
+        if (!vehicleBrand && !dto.vehicle.brandOther?.trim()) {
+          throw new BadRequestException('Debes seleccionar una marca o especificar "Otros"');
+        }
+
+        vehicle = await this.vehiclesRepo.save(
+          this.vehiclesRepo.create({
+            owner: customer,
+            type: vehicleType,
+            brand: vehicleBrand ?? undefined,
+            brandOther: dto.vehicle.brandOther?.trim() || null,
+            model: dto.vehicle.model,
+            year: dto.vehicle.year,
+            vinOrPlate: dto.vehicle.vinOrPlate,
+            notes: dto.vehicle.notes,
+          }),
+        );
+      }
     } else {
       if (!dto.part) throw new BadRequestException('Datos de la pieza requeridos');
 
@@ -348,6 +359,19 @@ export class BookingsService {
       email: dto.createCustomer.email,
       password,
       fullName: dto.createCustomer.fullName,
+    });
+  }
+
+  async searchCustomers(query: string) {
+    const results = await this.usersService.searchClients(query, 15);
+    return results.map((u) => ({ id: u.id, email: u.email, fullName: u.fullName }));
+  }
+
+  async listCustomerVehicles(customerId: number) {
+    return this.vehiclesRepo.find({
+      where: { owner: { id: customerId } },
+      relations: ['owner', 'type', 'brand'],
+      order: { id: 'DESC' },
     });
   }
 }
