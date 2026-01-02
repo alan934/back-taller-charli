@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   Query,
   Req,
   UseGuards,
@@ -16,6 +17,7 @@ import { Role } from '../../common/enums/role.enum';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingsService } from './bookings.service';
+import { UpdateStatusDto } from './dto/update-status.dto';
 
 @Controller('bookings')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -63,5 +65,14 @@ export class BookingsController {
       throw new ForbiddenException('No tienes permisos para ver este turno');
     }
     return booking;
+  }
+
+  @Patch(':id/status')
+  @Roles(Role.ADMIN)
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateStatusDto,
+  ) {
+    return this.bookingsService.updateStatus(id, dto.status);
   }
 }

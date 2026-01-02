@@ -259,6 +259,14 @@ export class BookingsService {
     return { total, byStatus, upcoming };
   }
 
+  async updateStatus(id: number, status: BookingStatus) {
+    const booking = await this.bookingsRepo.findOne({ where: { id } });
+    if (!booking) throw new NotFoundException('Turno no encontrado');
+
+    booking.status = status;
+    return this.bookingsRepo.save(booking);
+  }
+
   async ensureSlotAvailable(scheduledAt: Date, durationMinutes: number) {
     const start = scheduledAt;
     const end = new Date(start.getTime() + durationMinutes * 60000);
