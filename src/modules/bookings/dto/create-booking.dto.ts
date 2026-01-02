@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
-  ArrayMinSize,
   IsArray,
   IsDate,
   IsEmail,
@@ -106,7 +105,6 @@ export class CreateBookingDto {
 
   @IsArray()
   @IsInt({ each: true })
-  @ArrayMinSize(1)
   commonIssueIds: number[];
 
   @IsOptional()
