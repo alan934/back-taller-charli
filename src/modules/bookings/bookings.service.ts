@@ -85,6 +85,7 @@ export class BookingsService {
   async create(dto: CreateBookingDto, requestedById?: number) {
     const duration = await this.computeDurationMinutes(dto);
     const requestedBy = requestedById ? await this.usersService.findById(requestedById) : null;
+    const createdWithBooking = !dto.customerId && !!dto.createCustomer;
 
     const customer = dto.customerId
       ? await this.usersService.findById(dto.customerId)
@@ -208,6 +209,11 @@ export class BookingsService {
         code: saved.code,
         scheduledAt: saved.scheduledAt,
         assetType: saved.assetType,
+        customerName: customer.fullName ?? undefined,
+        credentials:
+          createdWithBooking && dto.createCustomer?.password
+            ? { email: customer.email, password: dto.createCustomer.password }
+            : undefined,
       });
     }
 
@@ -362,11 +368,12 @@ export class BookingsService {
 
   private async ensureCustomer(dto: CreateBookingDto) {
     if (!dto.createCustomer) return null;
-    const password = randomUUID().slice(0, 12);
+    const password = dto.createCustomer.password?.trim() || randomUUID().slice(0, 12);
     return this.usersService.create({
       email: dto.createCustomer.email,
       password,
       fullName: dto.createCustomer.fullName,
+      phone: dto.createCustomer.phone,
     });
   }
 
