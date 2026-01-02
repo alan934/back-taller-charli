@@ -2,6 +2,7 @@ import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -34,4 +35,12 @@ export class User {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @Exclude()
+  @Column({ default: true })
+  isActive: boolean;
+
+  @Exclude()
+  @DeleteDateColumn({ type: 'timestamptz', nullable: true })
+  deletedAt?: Date | null;
 }
