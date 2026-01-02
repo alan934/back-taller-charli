@@ -1,11 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsOptional, Matches, Min } from 'class-validator';
 import { AssetType } from '../enums/asset-type.enum';
 
 export class AvailabilityQueryDto {
-  @IsDate()
-  @Type(() => Date)
-  date: Date;
+  // Expect a plain date string (YYYY-MM-DD) in local time to avoid implicit UTC shifts
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @IsDateString()
+  @Type(() => String)
+  date: string;
 
   @IsEnum(AssetType)
   @Type(() => String)

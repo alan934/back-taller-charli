@@ -67,9 +67,16 @@ export class AgendaService {
   }
 
   async getSlots(query: AvailabilityQueryDto) {
-    const date = query.date;
-    const { y, m, d, weekdayZeroBased } = this.getLocalDateParts(date);
-    const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dateStr = query.date;
+
+    const [y, m, d] = dateStr.split('-').map((v) => Number(v));
+    if (!y || !m || !d) {
+      throw new BadRequestException('Fecha inválida');
+    }
+
+    // Use noon as reference to compute weekday without DST surprises
+    const referenceUtc = this.localToUtc(y, m - 1, d, 12, 0, 0);
+    const { weekdayZeroBased } = this.getLocalDateParts(referenceUtc);
     const duration = query.durationMinutes ?? (query.assetType === AssetType.VEHICLE ? 60 : 45);
 
     const blocked = await this.blocksRepo.findOne({ where: { date: dateStr } });
