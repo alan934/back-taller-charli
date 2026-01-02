@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CreateIssueDto } from './dto/create-issue.dto';
+import { UpdateIssueDto } from './dto/update-issue.dto';
 import { ListIssuesQueryDto } from './dto/list-issues-query.dto';
 import { IssuesService } from './issues.service';
 
@@ -21,5 +22,11 @@ export class IssuesController {
   @Roles(Role.ADMIN)
   async create(@Body() dto: CreateIssueDto) {
     return this.issuesService.create(dto);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateIssueDto) {
+    return this.issuesService.update(id, dto);
   }
 }
