@@ -15,6 +15,8 @@ import { IssueKind } from '../enums/issue-kind.enum';
 import { Issue } from './issue.entity';
 import { Part } from './part.entity';
 import { Vehicle } from './vehicle.entity';
+import { BookingUsedPart } from './booking-used-part.entity';
+import { OneToMany } from 'typeorm';
 
 @Entity({ name: 'bookings' })
 export class Booking {
@@ -41,6 +43,9 @@ export class Booking {
 
   @ManyToOne(() => Part, { onDelete: 'SET NULL', nullable: true })
   part?: Part | null;
+
+  @OneToMany(() => BookingUsedPart, (usedPart) => usedPart.booking, { eager: true, cascade: true })
+  usedParts: BookingUsedPart[];
 
   @ManyToMany(() => Issue, { eager: true })
   @JoinTable({ name: 'booking_common_issues' })

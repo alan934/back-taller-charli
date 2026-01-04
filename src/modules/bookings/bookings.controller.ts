@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -18,6 +19,8 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingsService } from './bookings.service';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { CreateUsedPartDto } from './dto/create-used-part.dto';
+import { UpdateDetailsDto } from './dto/update-details.dto';
 
 @Controller('bookings')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -74,5 +77,32 @@ export class BookingsController {
     @Body() dto: UpdateStatusDto,
   ) {
     return this.bookingsService.updateStatus(id, dto.status);
+  }
+
+  @Post(':id/parts')
+  @Roles(Role.ADMIN)
+  async addUsedPart(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateUsedPartDto,
+  ) {
+    return this.bookingsService.addUsedPart(id, dto);
+  }
+
+  @Delete(':id/parts/:partId')
+  @Roles(Role.ADMIN)
+  async removeUsedPart(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('partId', ParseIntPipe) partId: number,
+  ) {
+    return this.bookingsService.removeUsedPart(id, partId);
+  }
+
+  @Patch(':id/details')
+  @Roles(Role.ADMIN)
+  async updateDetails(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateDetailsDto,
+  ) {
+    return this.bookingsService.updateDetails(id, dto.details || '');
   }
 }

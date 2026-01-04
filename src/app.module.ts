@@ -19,6 +19,7 @@ import { VehicleTypeEntity } from './modules/bookings/entities/vehicle-type.enti
 import { Workday } from './modules/bookings/entities/workday.entity';
 import { HolidayBlock } from './modules/bookings/entities/holiday-block.entity';
 import { WorkdayOverride } from './modules/bookings/entities/workday-override.entity';
+import { BookingUsedPart } from './modules/bookings/entities/booking-used-part.entity';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { WorkdayOverride } from './modules/bookings/entities/workday-override.en
           Workday,
           HolidayBlock,
           WorkdayOverride,
+          BookingUsedPart,
         ],
         synchronize: config.get<boolean>('database.synchronize'),
       }),

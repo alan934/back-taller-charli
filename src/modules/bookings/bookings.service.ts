@@ -8,6 +8,7 @@ import { AssetType } from './enums/asset-type.enum';
 import { BookingStatus } from './enums/booking-status.enum';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Booking } from './entities/booking.entity';
+import { BookingUsedPart } from './entities/booking-used-part.entity';
 import { Issue } from './entities/issue.entity';
 import { Part } from './entities/part.entity';
 import { PartCategory } from './entities/part-category.entity';
@@ -21,6 +22,7 @@ import { User } from '../users/entities/user.entity';
 import { betweenDates } from './helpers/typeorm-between.util';
 import { overlapsRange } from './helpers/booking-overlap.util';
 import { MailService } from './mail.service';
+import { CreateUsedPartDto } from './dto/create-used-part.dto';
 
 @Injectable()
 export class BookingsService {
@@ -29,6 +31,7 @@ export class BookingsService {
 
   constructor(
     @InjectRepository(Booking) private readonly bookingsRepo: Repository<Booking>,
+    @InjectRepository(BookingUsedPart) private readonly usedPartsRepo: Repository<BookingUsedPart>,
     @InjectRepository(Issue) private readonly issuesRepo: Repository<Issue>,
     @InjectRepository(Vehicle) private readonly vehiclesRepo: Repository<Vehicle>,
     @InjectRepository(Part) private readonly partsRepo: Repository<Part>,
@@ -223,7 +226,7 @@ export class BookingsService {
   async findOne(id: number) {
     const booking = await this.bookingsRepo.findOne({
       where: { id },
-      relations: ['customer', 'vehicle', 'vehicle.type', 'vehicle.brand', 'part', 'requestedBy'],
+      relations: ['customer', 'vehicle', 'vehicle.type', 'vehicle.brand', 'part', 'requestedBy', 'usedParts'],
     });
     if (!booking) throw new NotFoundException('Turno no encontrado');
     return booking;
@@ -388,5 +391,32 @@ export class BookingsService {
       relations: ['owner', 'type', 'brand'],
       order: { id: 'DESC' },
     });
+  }
+
+  async addUsedPart(bookingId: number, dto: CreateUsedPartDto) {
+    const booking = await this.bookingsRepo.findOne({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Turno no encontrado');
+
+    const usedPart = this.usedPartsRepo.create({
+      name: dto.name,
+      quantity: dto.quantity,
+      booking,
+    });
+    return this.usedPartsRepo.save(usedPart);
+  }
+
+  async removeUsedPart(bookingId: number, partId: number) {
+    const part = await this.usedPartsRepo.findOne({
+      where: { id: partId, booking: { id: bookingId } },
+    });
+    if (!part) throw new NotFoundException('Repuesto no encontrado en este turno');
+    return this.usedPartsRepo.remove(part);
+  }
+
+  async updateDetails(bookingId: number, details: string) {
+    const booking = await this.bookingsRepo.findOne({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Turno no encontrado');
+    booking.details = details;
+    return this.bookingsRepo.save(booking);
   }
 }

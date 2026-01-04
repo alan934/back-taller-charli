@@ -6,6 +6,7 @@ import { AgendaService } from './agenda.service';
 import { BookingsController } from './bookings.controller';
 import { BookingsService } from './bookings.service';
 import { Booking } from './entities/booking.entity';
+import { BookingUsedPart } from './entities/booking-used-part.entity';
 import { HolidayBlock } from './entities/holiday-block.entity';
 import { Issue } from './entities/issue.entity';
 import { Part } from './entities/part.entity';
@@ -29,6 +30,7 @@ import { VehicleTypesService } from './vehicle-types.service';
   imports: [
     TypeOrmModule.forFeature([
       Booking,
+      BookingUsedPart,
       Issue,
       Vehicle,
       VehicleBrand,
