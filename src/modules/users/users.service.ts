@@ -49,7 +49,7 @@ export class UsersService {
   async create(input: CreateUserInput): Promise<User> {
     const exists = await this.usersRepo.findOne({ where: { email: input.email.toLowerCase() }, withDeleted: true });
     if (exists) {
-      throw new ConflictException('Email already registered');
+      throw new ConflictException('El correo electrónico ya está registrado');
     }
 
     const user = this.usersRepo.create({

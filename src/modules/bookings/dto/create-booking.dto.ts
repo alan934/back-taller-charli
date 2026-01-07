@@ -115,9 +115,10 @@ export class CreateBookingDto {
   @Type(() => PartInputDto)
   part?: PartInputDto;
 
+  @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  commonIssueIds: number[];
+  commonIssueIds?: number[];
 
   @IsOptional()
   @IsArray()

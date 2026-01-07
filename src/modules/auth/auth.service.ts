@@ -45,12 +45,12 @@ export class AuthService {
   private async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email, true);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
     return user;

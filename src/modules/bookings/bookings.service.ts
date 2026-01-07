@@ -96,11 +96,15 @@ export class BookingsService {
       : await this.ensureCustomer(dto);
     if (!customer) throw new NotFoundException('Cliente no encontrado');
 
-    const issues = await this.issuesRepo.find({
-      where: { id: In(dto.commonIssueIds) },
-      relations: ['partCategory'],
-    });
-    if (issues.length !== dto.commonIssueIds.length) {
+    const issueIds = dto.commonIssueIds || [];
+    const issues = issueIds.length > 0
+      ? await this.issuesRepo.find({
+          where: { id: In(issueIds) },
+          relations: ['partCategory'],
+        })
+      : [];
+
+    if (issues.length !== issueIds.length) {
       throw new BadRequestException('Alguna falla seleccionada no existe');
     }
 
