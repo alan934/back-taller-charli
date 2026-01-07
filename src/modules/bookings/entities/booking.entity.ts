@@ -11,6 +11,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { AssetType } from '../enums/asset-type.enum';
 import { BookingStatus } from '../enums/booking-status.enum';
+import { BookingTimeType } from '../enums/booking-time-type.enum';
 import { IssueKind } from '../enums/issue-kind.enum';
 import { Issue } from './issue.entity';
 import { Part } from './part.entity';
@@ -31,6 +32,9 @@ export class Booking {
 
   @Column({ type: 'enum', enum: AssetType })
   assetType: AssetType;
+
+  @Column({ type: 'enum', enum: BookingTimeType, default: BookingTimeType.SPECIFIC })
+  timeType: BookingTimeType;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   requestedBy?: User | null;

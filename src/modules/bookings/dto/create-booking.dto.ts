@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 import { AssetType } from '../enums/asset-type.enum';
 import { BookingStatus } from '../enums/booking-status.enum';
+import { BookingTimeType } from '../enums/booking-time-type.enum';
 
 class CreateCustomerDto {
   @IsEmail()
@@ -145,4 +146,8 @@ export class CreateBookingDto {
   @IsOptional()
   @IsEnum(BookingStatus)
   status?: BookingStatus;
+
+  @IsOptional()
+  @IsEnum(BookingTimeType)
+  timeType?: BookingTimeType;
 }

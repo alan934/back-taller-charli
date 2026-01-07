@@ -6,6 +6,7 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../../common/enums/role.enum';
 import { AssetType } from './enums/asset-type.enum';
 import { BookingStatus } from './enums/booking-status.enum';
+import { BookingTimeType } from './enums/booking-time-type.enum';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { Booking } from './entities/booking.entity';
 import { BookingUsedPart } from './entities/booking-used-part.entity';
@@ -187,12 +188,16 @@ export class BookingsService {
       );
     }
 
-    await this.ensureSlotAvailable(dto.scheduledAt, duration);
+    // Default to SPECIFIC if not provided
+    const timeType = dto.timeType ?? BookingTimeType.SPECIFIC;
+
+    await this.ensureSlotAvailable(dto.scheduledAt, duration, timeType);
 
     const booking = this.bookingsRepo.create({
       code: randomUUID(),
       status: dto.status ?? BookingStatus.PENDING,
       assetType: dto.assetType,
+      timeType,
       requestedBy: requestedBy ?? undefined,
       customer,
       vehicle: vehicle ?? undefined,
@@ -276,7 +281,7 @@ export class BookingsService {
     return this.bookingsRepo.save(booking);
   }
 
-  async ensureSlotAvailable(scheduledAt: Date, durationMinutes: number) {
+  async ensureSlotAvailable(scheduledAt: Date, durationMinutes: number, timeType: BookingTimeType = BookingTimeType.SPECIFIC) {
     const start = scheduledAt;
     const end = new Date(start.getTime() + durationMinutes * 60000);
 
@@ -288,6 +293,10 @@ export class BookingsService {
       console.warn('[booking] día bloqueado', { dateStr, startUtc: start.toISOString() });
       throw new BadRequestException('Día no disponible');
     }
+
+    // If it's a shift type (MORNING/AFTERNOON), we only check strict workdays if we want to enforce
+    // that the shift exists. Assuming "Morning" falls in morning work hours.
+    // For simplicity, we just check if it's a valid workday generally.
 
     const weekday = weekdayZeroBased;
     const [workdays, override] = await Promise.all([
@@ -301,31 +310,36 @@ export class BookingsService {
 
     const totalMax = override?.maxBookings ?? workdays.reduce((sum, w) => sum + (w.maxBookings ?? 0), 0);
     let withinAny = false;
-    for (const wd of workdays) {
-      const within = this.isWithinWorkday(start, end, wd, y, m - 1, d);
-      if (within) {
-        withinAny = true;
-        break;
+    
+    // Check strict time boundaries only for SPECIFIC time bookings
+    if (timeType === BookingTimeType.SPECIFIC) {
+      for (const wd of workdays) {
+        const within = this.isWithinWorkday(start, end, wd, y, m - 1, d);
+        if (within) {
+          withinAny = true;
+          break;
+        }
       }
-    }
 
-    if (!withinAny) {
-      const startLocal = this.formatLocal(start);
-      const endLocal = this.formatLocal(end);
-      console.warn('[booking] horario fuera de disponibilidad', {
-        dateStr,
-        weekday,
-        workdays,
-        startUtc: start.toISOString(),
-        endUtc: end.toISOString(),
-        startLocal,
-        endLocal,
-      });
-      throw new BadRequestException(
-        `Horario fuera de disponibilidad. Seleccionado ${startLocal.time}-${endLocal.time} (${startLocal.date}), jornadas: ${workdays
-          .map((w) => `${w.startTime}-${w.endTime} (#${w.id})`)
-          .join(', ')}. (weekday=${weekday})`,
-      );
+      if (!withinAny) {
+        const startLocal = this.formatLocal(start);
+        const endLocal = this.formatLocal(end);
+        console.warn('[booking] horario fuera de disponibilidad', {
+          dateStr,
+          weekday,
+          workdays,
+          startUtc: start.toISOString(),
+          endUtc: end.toISOString(),
+          startLocal,
+          endLocal,
+        });
+        throw new BadRequestException(
+          `Horario fuera de disponibilidad. Seleccionado ${startLocal.time}-${endLocal.time} (${startLocal.date}).`
+        );
+      }
+    } else {
+        // For shift bookings, we imply it's valid if there are workdays.
+        withinAny = true; 
     }
 
     const dayStart = this.localToUtc(y, m - 1, d, 0, 0, 0);
@@ -341,7 +355,15 @@ export class BookingsService {
       throw new BadRequestException('Se alcanzó el máximo de turnos para el día');
     }
 
+    // Skip overlap check for shift based bookings
+    if (timeType !== BookingTimeType.SPECIFIC) {
+        return;
+    }
+
     const hasOverlap = sameDayBookings.some((b) => {
+      // Don't check overlap against other shift-based bookings, as they don't block specific times
+      if (b.timeType && b.timeType !== BookingTimeType.SPECIFIC) return false;
+
       const bEnd = new Date(b.scheduledAt.getTime() + b.durationMinutes * 60000);
       return overlapsRange(start, end, b.scheduledAt, bEnd);
     });
