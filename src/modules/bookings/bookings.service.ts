@@ -449,4 +449,12 @@ export class BookingsService {
     booking.details = details;
     return this.bookingsRepo.save(booking);
   }
+
+  async updateRepairNotes(bookingId: number, notes: string) {
+    const booking = await this.bookingsRepo.findOne({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException('Turno no encontrado');
+    booking.repairNotes = notes;
+    return this.bookingsRepo.save(booking);
+  }
 }
+

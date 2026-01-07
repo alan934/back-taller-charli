@@ -61,6 +61,9 @@ export class Booking {
   @Column({ type: 'text', nullable: true })
   details?: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  repairNotes?: string | null;
+
   @Column({ type: 'varchar', length: 500, nullable: true })
   mediaUrl?: string | null;
 

@@ -21,6 +21,7 @@ import { BookingsService } from './bookings.service';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { CreateUsedPartDto } from './dto/create-used-part.dto';
 import { UpdateDetailsDto } from './dto/update-details.dto';
+import { UpdateRepairNotesDto } from './dto/update-repair-notes.dto';
 
 @Controller('bookings')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -104,5 +105,14 @@ export class BookingsController {
     @Body() dto: UpdateDetailsDto,
   ) {
     return this.bookingsService.updateDetails(id, dto.details || '');
+  }
+
+  @Patch(':id/repair-notes')
+  @Roles(Role.ADMIN)
+  async updateRepairNotes(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateRepairNotesDto,
+  ) {
+    return this.bookingsService.updateRepairNotes(id, dto.repairNotes || '');
   }
 }
