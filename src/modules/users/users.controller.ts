@@ -18,6 +18,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateClientDto } from './dto/create-client.dto';
+import { CreateFastClientDto } from './dto/create-fast-client.dto';
 import { randomUUID } from 'crypto';
 import { UpsertVehicleDto } from './dto/upsert-vehicle.dto';
 import { UpsertPartDto } from './dto/upsert-part.dto';
@@ -47,6 +48,14 @@ export class UsersController {
 
     return this.usersService.sanitizeUser(created);
   }
+
+  @Post('fast-client')
+  @Roles(Role.ADMIN)
+  async createFastClient(@Body() dto: CreateFastClientDto) {
+    const created = await this.usersService.createFastClient(dto.fullName, dto.phone);
+    return this.usersService.sanitizeUser(created);
+  }
+
 
   @Patch(':id')
   @Roles(Role.ADMIN)

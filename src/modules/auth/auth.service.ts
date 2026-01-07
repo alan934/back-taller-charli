@@ -26,7 +26,7 @@ export class AuthService {
 
     return this.buildAuthResponse(
       user.id,
-      user.email,
+      user.email!,
       user.role,
       this.usersService.sanitizeUser(user),
     );
@@ -36,7 +36,7 @@ export class AuthService {
     const user = await this.validateUser(dto.email, dto.password);
     return this.buildAuthResponse(
       user.id,
-      user.email,
+      user.email!,
       user.role,
       this.usersService.sanitizeUser(user),
     );
@@ -44,7 +44,7 @@ export class AuthService {
 
   private async validateUser(email: string, password: string) {
     const user = await this.usersService.findByEmail(email, true);
-    if (!user) {
+    if (!user || !user.password) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 

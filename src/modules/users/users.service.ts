@@ -63,6 +63,15 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
+  async createFastClient(fullName: string, phone: string): Promise<User> {
+    const user = this.usersRepo.create({
+      fullName,
+      phone,
+      role: Role.CLIENT,
+    });
+    return this.usersRepo.save(user);
+  }
+
   async findByEmail(email: string, includePassword = false): Promise<User | null> {
     if (includePassword) {
       return this.usersRepo.findOne({

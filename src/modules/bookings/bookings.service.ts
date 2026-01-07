@@ -379,9 +379,13 @@ export class BookingsService {
 
   private async computeDurationMinutes(dto: CreateBookingDto) {
     if (dto.durationMinutes) return dto.durationMinutes;
-    const issues = await this.issuesRepo.find({ where: { id: In(dto.commonIssueIds) } });
-    const total = issues.reduce((sum, issue) => sum + (issue.durationMinutes ?? 0), 0);
-    if (total > 0) return total;
+
+    if (dto.commonIssueIds && dto.commonIssueIds.length > 0) {
+      const issues = await this.issuesRepo.find({ where: { id: In(dto.commonIssueIds) } });
+      const total = issues.reduce((sum, issue) => sum + (issue.durationMinutes ?? 0), 0);
+      if (total > 0) return total;
+    }
+
     return dto.assetType === AssetType.VEHICLE ? 60 : 45;
   }
 

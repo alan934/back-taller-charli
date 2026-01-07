@@ -14,8 +14,8 @@ export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ unique: true, nullable: true })
+  email?: string;
 
   @Column({ nullable: true })
   fullName?: string;
@@ -24,8 +24,8 @@ export class User {
   phone?: string;
 
   @Exclude()
-  @Column({ select: false })
-  password: string;
+  @Column({ select: false, nullable: true })
+  password?: string;
 
   @Column({ type: 'text', default: Role.CLIENT })
   role: Role;
