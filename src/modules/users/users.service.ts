@@ -147,6 +147,26 @@ export class UsersService {
     return instanceToPlain(user);
   }
 
+  async listAllVehicles(query = '') {
+    const q = query.trim();
+    
+    const qb = this.vehiclesRepo.createQueryBuilder('vehicle')
+      .leftJoinAndSelect('vehicle.owner', 'owner')
+      .leftJoinAndSelect('vehicle.type', 'type')
+      .leftJoinAndSelect('vehicle.brand', 'brand')
+      .orderBy('vehicle.id', 'DESC');
+
+    if (q) {
+      qb.where(
+        '(vehicle.model ILIKE :q OR vehicle.vinOrPlate ILIKE :q OR vehicle.brandOther ILIKE :q OR owner.fullName ILIKE :q OR brand.name ILIKE :q)',
+        { q: `%${q}%` }
+      );
+    }
+
+    const vehicles = await qb.getMany();
+    return vehicles.map(v => instanceToPlain(v));
+  }
+
   async listVehicles(clientId: number) {
     await this.getClientOrThrow(clientId);
     const vehicles = await this.vehiclesRepo.find({ where: { owner: { id: clientId } } });

@@ -10,6 +10,7 @@ import {
   UseGuards,
   Post,
   Put,
+  Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -72,6 +73,39 @@ export class UsersController {
   async deleteClient(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.softDeleteClient(id);
     return { success: true };
+  }
+
+  @Get('vehicles/all')
+  @Roles(Role.ADMIN)
+  async listAllVehicles(@Query('q') q = '') {
+    return this.usersService.listAllVehicles(q);
+  }
+
+  @Get('me/vehicles')
+  async listMyVehicles(@Request() req: any) {
+    return this.usersService.listVehicles(req.user.id);
+  }
+
+  @Post('me/vehicles')
+  async addMyVehicle(@Request() req: any, @Body() dto: UpsertVehicleDto) {
+    return this.usersService.createVehicle(req.user.id, dto);
+  }
+
+  @Put('me/vehicles/:vehicleId')
+  async updateMyVehicle(
+    @Request() req: any,
+    @Param('vehicleId', ParseIntPipe) vehicleId: number,
+    @Body() dto: UpsertVehicleDto,
+  ) {
+    return this.usersService.updateVehicle(req.user.id, vehicleId, dto);
+  }
+
+  @Delete('me/vehicles/:vehicleId')
+  async deleteMyVehicle(
+    @Request() req: any,
+    @Param('vehicleId', ParseIntPipe) vehicleId: number,
+  ) {
+    return this.usersService.deleteVehicle(req.user.id, vehicleId);
   }
 
   @Get(':id/vehicles')
