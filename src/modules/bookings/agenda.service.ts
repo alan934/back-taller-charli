@@ -116,15 +116,18 @@ export class AgendaService {
 
       if (start >= end) continue;
 
-      const windowEnd = end; // no slot should start at or after endTime
+      const windowEnd = end;
 
+      // Iterar mientras el inicio del slot sea menor a la hora de fin configurada
       for (
         let cursor = start;
-        cursor < end && bookings.length + slots.length < dayMax;
+        cursor < windowEnd; 
         cursor = new Date(cursor.getTime() + duration * 60000)
       ) {
+        // Verificar si el slot entra completamente en el rango definido
         const slotEnd = new Date(cursor.getTime() + duration * 60000);
         if (slotEnd > windowEnd) break;
+
         const overlaps = bookings.some((b) =>
           overlapsRange(
             cursor,

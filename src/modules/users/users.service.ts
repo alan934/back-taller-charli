@@ -63,10 +63,35 @@ export class UsersService {
     return this.usersRepo.save(user);
   }
 
+  private normalizeName(name: string): string {
+    return name
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+
   async createFastClient(fullName: string, phone: string): Promise<User> {
+    const normalizedName = this.normalizeName(fullName);
+    const cleanPhone = phone.trim();
+
+    // Buscar duplicado por nombre y teléfono
+    const existing = await this.usersRepo.findOne({
+      where: {
+        fullName: ILike(normalizedName),
+        phone: cleanPhone,
+        role: Role.CLIENT,
+      },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
     const user = this.usersRepo.create({
-      fullName,
-      phone,
+      fullName: normalizedName,
+      phone: cleanPhone,
       role: Role.CLIENT,
     });
     return this.usersRepo.save(user);

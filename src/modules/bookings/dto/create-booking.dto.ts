@@ -106,6 +106,12 @@ export class CreateBookingDto {
   vehicleId?: number;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  existingVehicleId?: number;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => VehicleInputDto)
   vehicle?: VehicleInputDto;

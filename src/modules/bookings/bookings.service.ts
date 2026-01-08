@@ -118,9 +118,10 @@ export class BookingsService {
         throw new BadRequestException('Alguna falla no corresponde a vehículos');
       }
 
-      if (dto.vehicleId) {
+      const existingVehicleId = dto.existingVehicleId || dto.vehicleId;
+      if (existingVehicleId) {
         vehicle = await this.vehiclesRepo.findOne({
-          where: { id: dto.vehicleId },
+          where: { id: existingVehicleId },
           relations: ['owner', 'type', 'brand'],
         });
 
