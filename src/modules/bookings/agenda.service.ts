@@ -148,6 +148,11 @@ export class AgendaService {
       console.debug('[agenda] slots generados', { dateStr, weekday: weekdayZeroBased, count: slots.length, primeraHoraLocal: label, duration });
     }
 
-    return { date: dateStr, slots };
+    const ranges = workdays.map((wd) => ({
+      start: wd.startTime.slice(0, 5),
+      end: wd.endTime.slice(0, 5),
+    }));
+
+    return { date: dateStr, slots, ranges };
   }
 }
