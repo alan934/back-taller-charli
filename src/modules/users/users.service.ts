@@ -38,6 +38,10 @@ export class UsersService {
     @InjectRepository(PartCategory) private readonly partCategoriesRepo: Repository<PartCategory>,
   ) {}
 
+  async findAdmins(): Promise<User[]> {
+    return this.usersRepo.find({ where: { role: Role.ADMIN, isActive: true } });
+  }
+
   private async getClientOrThrow(id: number): Promise<User> {
     const user = await this.usersRepo.findOne({ where: { id, role: Role.CLIENT, isActive: true } });
     if (!user) {

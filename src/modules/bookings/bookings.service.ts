@@ -24,6 +24,8 @@ import { betweenDates } from './helpers/typeorm-between.util';
 import { overlapsRange } from './helpers/booking-overlap.util';
 import { MailService } from './mail.service';
 import { CreateUsedPartDto } from './dto/create-used-part.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class BookingsService {
@@ -46,6 +48,7 @@ export class BookingsService {
     private readonly overridesRepo: Repository<WorkdayOverride>,
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // Compute timezone offset in minutes for a given local date/time (BA)
@@ -217,6 +220,32 @@ export class BookingsService {
 
     const saved = await this.bookingsRepo.save(booking);
 
+    // Notify logic
+    const isCreatorAdmin = requestedBy?.role === Role.ADMIN;
+    if (isCreatorAdmin && customer) {
+      await this.notificationsService.create(
+        customer,
+        'Nuevo turno asignado',
+        `Te han asignado un turno para el ${this.formatLocal(saved.scheduledAt).label}`,
+        NotificationType.INFO,
+        saved.id,
+      );
+    } else if (!isCreatorAdmin) {
+      // User created it (or public) -> Notify admins
+      const admins = await this.usersService.findAdmins();
+      for (const admin of admins) {
+        await this.notificationsService.create(
+          admin,
+          'Nuevo turno solicitado',
+          `El cliente ${customer.fullName || customer.email} ha solicitado un turno para el ${
+            this.formatLocal(saved.scheduledAt).label
+          }`,
+          NotificationType.INFO,
+          saved.id,
+        );
+      }
+    }
+
     if (customer.email) {
       await this.mailService.sendBookingConfirmation(customer.email, {
         code: saved.code,
@@ -279,11 +308,24 @@ export class BookingsService {
   }
 
   async updateStatus(id: number, status: BookingStatus) {
-    const booking = await this.bookingsRepo.findOne({ where: { id } });
+    const booking = await this.bookingsRepo.findOne({ where: { id }, relations: ['customer'] });
     if (!booking) throw new NotFoundException('Turno no encontrado');
 
+    const oldStatus = booking.status;
     booking.status = status;
-    return this.bookingsRepo.save(booking);
+    const saved = await this.bookingsRepo.save(booking);
+
+    if (oldStatus !== status && booking.customer) {
+      await this.notificationsService.create(
+        booking.customer,
+        'Estado de turno actualizado',
+        `Tu turno se encuentra ahora en estado: ${status}`,
+        NotificationType.INFO,
+        booking.id,
+      );
+    }
+
+    return saved;
   }
 
   async ensureSlotAvailable(scheduledAt: Date, durationMinutes: number, timeType: BookingTimeType = BookingTimeType.SPECIFIC) {

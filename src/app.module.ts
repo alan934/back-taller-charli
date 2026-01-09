@@ -9,6 +9,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { User } from './modules/users/entities/user.entity';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { Notification } from './modules/notifications/entities/notification.entity';
 import { Booking } from './modules/bookings/entities/booking.entity';
 import { Issue } from './modules/bookings/entities/issue.entity';
 import { Vehicle } from './modules/bookings/entities/vehicle.entity';
@@ -51,6 +53,7 @@ import { BookingUsedPart } from './modules/bookings/entities/booking-used-part.e
           HolidayBlock,
           WorkdayOverride,
           BookingUsedPart,
+          Notification,
         ],
         synchronize: config.get<boolean>('database.synchronize'),
       }),
@@ -58,6 +61,7 @@ import { BookingUsedPart } from './modules/bookings/entities/booking-used-part.e
     UsersModule,
     AuthModule,
     BookingsModule,
+    NotificationsModule,
   ],
   providers: [
     {
