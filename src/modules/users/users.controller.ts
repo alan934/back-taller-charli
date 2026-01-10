@@ -142,6 +142,39 @@ export class UsersController {
     return this.usersService.deleteVehicle(id, vehicleId);
   }
 
+  @Get('me/parts')
+  async listMyParts(@Request() req: any) {
+    return this.usersService.listParts(req.user.id);
+  }
+
+  @Post('me/parts')
+  async addMyPart(@Request() req: any, @Body() dto: UpsertPartDto) {
+    return this.usersService.createPart(req.user.id, dto);
+  }
+
+  @Put('me/parts/:partId')
+  async updateMyPart(
+    @Request() req: any,
+    @Param('partId', ParseIntPipe) partId: number,
+    @Body() dto: UpsertPartDto,
+  ) {
+    return this.usersService.updatePart(req.user.id, partId, dto);
+  }
+
+  @Delete('me/parts/:partId')
+  async deleteMyPart(
+    @Request() req: any,
+    @Param('partId', ParseIntPipe) partId: number,
+  ) {
+    return this.usersService.deletePart(req.user.id, partId);
+  }
+
+  @Get('parts/all')
+  @Roles(Role.ADMIN)
+  async listAllParts(@Query('q') q = '') {
+    return this.usersService.listAllParts(q);
+  }
+
   @Get(':id/parts')
   @Roles(Role.ADMIN)
   async listParts(@Param('id', ParseIntPipe) id: number) {

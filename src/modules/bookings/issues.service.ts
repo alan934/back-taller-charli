@@ -44,6 +44,14 @@ export class IssuesService {
     return this.issuesRepo.save(issue);
   }
 
+  async delete(id: number) {
+    const issue = await this.issuesRepo.findOne({ where: { id } });
+    if (!issue) {
+      throw new NotFoundException('Falla no encontrada');
+    }
+    return this.issuesRepo.remove(issue);
+  }
+
   async update(id: number, dto: UpdateIssueDto) {
     const issue = await this.issuesRepo.findOne({ where: { id } });
     if (!issue) {

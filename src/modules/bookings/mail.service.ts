@@ -71,7 +71,10 @@ export class MailService {
     <!-- Footer -->
     <div class="footer" style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 13px; color: #64748b;">
       <p style="margin: 0 0 8px;">&copy; ${year} Taller Charli</p>
-      <p style="margin: 0;">Podés gestionar tus turnos en <a href="${appUrl}" style="color: #2563eb; text-decoration: none;">${appUrl}</a></p>
+      <div style="margin-top: 20px;">
+          <a href="${appUrl}/#/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600;">Ir al Panel de Control</a>
+      </div>
+      <p style="margin: 20px 0 0;">O podés gestionar tus turnos en <a href="${appUrl}" style="color: #2563eb; text-decoration: none;">${appUrl}</a></p>
     </div>
   </div>
 </body>

@@ -268,6 +268,22 @@ export class UsersService {
     return { success: true };
   }
 
+  async listAllParts(q?: string) {
+    const qb = this.partsRepo.createQueryBuilder('part')
+      .leftJoinAndSelect('part.owner', 'owner')
+      .leftJoinAndSelect('part.category', 'category')
+      .orderBy('part.id', 'DESC');
+
+    if (q) {
+      qb.where(
+        '(part.description ILIKE :q OR owner.fullName ILIKE :q OR category.name ILIKE :q)',
+        { q: `%${q}%` }
+      );
+    }
+    const parts = await qb.getMany();
+    return parts.map(p => instanceToPlain(p));
+  }
+
   async listParts(clientId: number) {
     await this.getClientOrThrow(clientId);
     const parts = await this.partsRepo.find({ where: { owner: { id: clientId } } });

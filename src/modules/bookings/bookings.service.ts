@@ -97,6 +97,14 @@ export class BookingsService {
     });
   }
 
+  async findByPart(partId: number) {
+    return this.bookingsRepo.find({
+      where: { part: { id: partId } },
+      relations: ['customer', 'part', 'commonIssues', 'customer'],
+      order: { scheduledAt: 'DESC' },
+    });
+  }
+
   async create(dto: CreateBookingDto, requestedById?: number) {
     const duration = await this.computeDurationMinutes(dto);
     const requestedBy = requestedById ? await this.usersService.findById(requestedById) : null;

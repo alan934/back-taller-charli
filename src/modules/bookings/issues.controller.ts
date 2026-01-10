@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
@@ -28,5 +28,11 @@ export class IssuesController {
   @Roles(Role.ADMIN)
   async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateIssueDto) {
     return this.issuesService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    return this.issuesService.delete(id);
   }
 }
