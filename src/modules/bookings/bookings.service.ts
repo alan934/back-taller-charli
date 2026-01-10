@@ -116,10 +116,12 @@ export class BookingsService {
     let selectedCategory: PartCategory | null = null;
 
     if (dto.assetType === AssetType.VEHICLE) {
-      const invalid = issues.filter((i) => i.partCategory);
-      if (invalid.length) {
-        throw new BadRequestException('Alguna falla no corresponde a vehículos');
-      }
+      // NOTE: Se permite seleccionar fallas con categoría de parte para vehículos,
+      // ya que un vehículo contiene partes.
+      // const invalid = issues.filter((i) => i.partCategory);
+      // if (invalid.length) {
+      //   throw new BadRequestException('Alguna falla no corresponde a vehículos');
+      // }
 
       const existingVehicleId = dto.existingVehicleId || dto.vehicleId;
       if (existingVehicleId) {
