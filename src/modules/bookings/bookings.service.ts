@@ -89,6 +89,14 @@ export class BookingsService {
     };
   }
 
+  async findByVehicle(vehicleId: number) {
+    return this.bookingsRepo.find({
+      where: { vehicle: { id: vehicleId } },
+      relations: ['customer', 'vehicle', 'commonIssues', 'customer'],
+      order: { scheduledAt: 'DESC' },
+    });
+  }
+
   async create(dto: CreateBookingDto, requestedById?: number) {
     const duration = await this.computeDurationMinutes(dto);
     const requestedBy = requestedById ? await this.usersService.findById(requestedById) : null;
@@ -417,9 +425,10 @@ export class BookingsService {
       return overlapsRange(start, end, b.scheduledAt, bEnd);
     });
 
-    if (hasOverlap) {
-      throw new BadRequestException('Ya existe un turno en ese horario');
-    }
+    // NOTE: Se permite solapamiento explicitamente
+    // if (hasOverlap) {
+    //   throw new BadRequestException('Ya existe un turno en ese horario');
+    // }
   }
 
   private async computeDurationMinutes(dto: CreateBookingDto) {

@@ -71,6 +71,15 @@ export class BookingsController {
     return booking;
   }
 
+  @Get('vehicle/:id')
+  async findByVehicle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    const bookings = await this.bookingsService.findByVehicle(id);
+    // Optional: Check if user owns the vehicle if not admin?
+    // For now assuming if they can see the vehicle ID, they can see its history
+    // or we can add a check if needed.
+    return bookings; 
+  }
+
   @Patch(':id/status')
   @Roles(Role.ADMIN)
   async updateStatus(

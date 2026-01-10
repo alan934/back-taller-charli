@@ -128,17 +128,18 @@ export class AgendaService {
         const slotEnd = new Date(cursor.getTime() + duration * 60000);
         if (slotEnd > windowEnd) break;
 
-        const overlaps = bookings.some((b) =>
-          overlapsRange(
-            cursor,
-            slotEnd,
-            b.scheduledAt,
-            new Date(b.scheduledAt.getTime() + b.durationMinutes * 60000),
-          ),
-        );
-        if (!overlaps) {
+        // NOTE: Se permite solapamiento para que múltiples clientes agenden al mismo horario
+        // const overlaps = bookings.some((b) =>
+        //   overlapsRange(
+        //     cursor,
+        //     slotEnd,
+        //     b.scheduledAt,
+        //     new Date(b.scheduledAt.getTime() + b.durationMinutes * 60000),
+        //   ),
+        // );
+        // if (!overlaps) {
           slots.push(cursor.toISOString());
-        }
+        // }
       }
     }
 
