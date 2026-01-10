@@ -39,6 +39,6 @@ export class WorkdayOverrideDto {
   date: string; // YYYY-MM-DD
 
   @IsInt()
-  @Min(1)
+  @Min(0)
   maxBookings: number;
 }
